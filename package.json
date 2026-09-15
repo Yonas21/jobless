@@ -1,0 +1,45 @@
+{
+  "name": "jobless",
+  "version": "1.1.1",
+  "description": "npx jobless — I still do not know the recruiter's coffee, mug color, or star sign. A terminal resume for a broken job market.",
+  "keywords": [
+    "cli",
+    "npx",
+    "resume",
+    "rant",
+    "job-market",
+    "linkedin",
+    "recruiter",
+    "terminal",
+    "portfolio",
+    "yonas-alem"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Yonas Alem",
+    "email": "yonalem21@gmail.com",
+    "url": "https://yonasalem.vercel.app"
+  },
+  "homepage": "https://yonasalem.vercel.app",
+  "bugs": {
+    "email": "yonalem21@gmail.com"
+  },
+  "type": "module",
+  "bin": {
+    "jobless": "bin/jobless.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node bin/jobless.js",
+    "who": "node bin/jobless.js who",
+    "work": "node bin/jobless.js work",
+    "rant": "node bin/jobless.js rant",
+    "hire": "node bin/jobless.js hire"
+  }
+}
