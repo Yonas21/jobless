@@ -2,8 +2,11 @@ import { createInterface } from 'node:readline';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { stdin } from 'node:process';
 
 import { menu } from './data.js';
+import { lintJobPost } from './lint.js';
+import { printTrap } from './reject.js';
 import {
   blank,
   clear,
@@ -12,11 +15,11 @@ import {
   showCursor,
 } from './style.js';
 import {
-  printBoot,
   printHeader,
   printHelp,
   printHire,
   printLandingTeaser,
+  printLintReport,
   printLooking,
   printMenu,
   printRant,
@@ -53,11 +56,31 @@ const ask = (rl, prompt) =>
     rl.question(prompt, resolve);
   });
 
+const readStdin = async () => {
+  const chunks = [];
+  for await (const chunk of stdin) chunks.push(chunk);
+  return Buffer.concat(chunks).toString('utf8');
+};
+
+const readPaste = async (rl) => {
+  blank();
+  print(dim('  paste a job description. empty line to lint.'));
+  blank();
+  const lines = [];
+  while (true) {
+    const line = await ask(rl, dim('  '));
+    if (line === '') break;
+    lines.push(line);
+  }
+  return lines.join('\n');
+};
+
 const resolveCommand = (input) => {
   const value = String(input).trim().toLowerCase();
   if (!value) return null;
   if (value === 'q' || value === 'quit' || value === 'exit') return 'quit';
   if (value === 'help') return 'help';
+  if (value === 'lint' || value === 'l') return 'lint';
   const fromMenu = menu.find((item) => item.key === value || item.command === value);
   if (fromMenu) return fromMenu.command;
   if (COMMANDS[value]) return value;
@@ -71,16 +94,20 @@ const runCommand = (command) => {
   return true;
 };
 
-const interactive = async ({ joke }) => {
-  if (process.stdout.isTTY) clear();
+const showResume = () => {
   printHeader();
   printSignature();
-  if (joke) {
-    blank();
-    await printBoot();
-  }
   printLandingTeaser();
   printMenu();
+};
+
+const interactive = async ({ trap }) => {
+  if (process.stdout.isTTY) clear();
+  if (trap) {
+    await printTrap({ animate: true });
+    blank();
+  }
+  showResume();
 
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   try {
@@ -89,12 +116,20 @@ const interactive = async ({ joke }) => {
       const command = resolveCommand(answer);
 
       if (!command) {
-        print(`  ${dim('unknown. try 1–5, h to hire, or q.')}`);
+        print(`  ${dim('unknown. try 1–5, l to lint, h to hire, or q.')}`);
         continue;
       }
       if (command === 'help') {
         if (process.stdout.isTTY) clear();
         printHelp();
+        printMenu();
+        continue;
+      }
+      if (command === 'lint') {
+        const text = await readPaste(rl);
+        if (process.stdout.isTTY) clear();
+        printHeader();
+        printLintReport(lintJobPost(text), 'paste');
         printMenu();
         continue;
       }
@@ -118,15 +153,46 @@ const interactive = async ({ joke }) => {
 };
 
 const parse = (argv) => {
-  const flags = new Set(argv.filter((arg) => arg.startsWith('-')));
-  const rest = argv.filter((arg) => !arg.startsWith('-')).map((arg) => arg.toLowerCase());
+  const flags = new Set();
+  const rest = [];
+  for (const arg of argv) {
+    if (arg.startsWith('-')) flags.add(arg);
+    else rest.push(arg);
+  }
   return { flags, rest };
 };
 
-export const run = async (argv = []) => {
-  const { flags, rest } = parse(argv);
+const runLintCli = async (files) => {
+  let source = 'stdin';
+  let text = '';
 
-  if (flags.has('-h') || flags.has('--help') || rest[0] === 'help') {
+  if (files[0]) {
+    source = files[0];
+    text = readFileSync(files[0], 'utf8');
+  } else if (!stdin.isTTY) {
+    text = await readStdin();
+  } else {
+    printHelp();
+    blank();
+    print(dim('  lint needs a file, a pipe, or an interactive paste: npx jobless lint posting.txt'));
+    process.exitCode = 1;
+    return;
+  }
+
+  printLintReport(lintJobPost(text), source);
+  blank();
+  print(dim('  more: npx jobless   ·   npx jobless hire'));
+};
+
+export const run = async (argv = []) => {
+  process.stdout.on('error', (error) => {
+    if (error.code === 'EPIPE') process.exit(0);
+  });
+
+  const { flags, rest } = parse(argv);
+  const verb = rest[0] ? rest[0].toLowerCase() : '';
+
+  if (flags.has('-h') || flags.has('--help') || verb === 'help') {
     printHelp();
     return;
   }
@@ -141,10 +207,15 @@ export const run = async (argv = []) => {
     return;
   }
 
-  const joke = flags.has('--joke');
-  const command = rest[0] ? resolveCommand(rest[0]) : null;
+  if (verb === 'lint' || verb === 'l') {
+    await runLintCli(rest.slice(1));
+    return;
+  }
 
-  if (command && command !== 'quit' && command !== 'help') {
+  const skipTrap = flags.has('--resume') || flags.has('--skip-trap') || flags.has('--no-trap');
+  const command = verb ? resolveCommand(verb) : null;
+
+  if (command && command !== 'quit' && command !== 'help' && command !== 'lint') {
     printHeader();
     runCommand(command);
     blank();
@@ -153,9 +224,10 @@ export const run = async (argv = []) => {
   }
 
   if (!process.stdout.isTTY) {
+    if (!skipTrap) await printTrap({ animate: false });
+    blank();
     printHeader();
     printSignature();
-    printWho();
     printHire({ copy: false });
     return;
   }
@@ -166,5 +238,5 @@ export const run = async (argv = []) => {
     process.exit(0);
   });
 
-  await interactive({ joke });
+  await interactive({ trap: !skipTrap });
 };

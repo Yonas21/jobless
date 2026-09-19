@@ -189,14 +189,7 @@ export const menu = [
   { key: '3', command: 'looking', label: 'roles I want' },
   { key: '4', command: 'skills', label: 'the stack' },
   { key: '5', command: 'rant', label: 'the market, with jokes' },
+  { key: 'l', command: 'lint', label: 'lint a job post' },
   { key: 'h', command: 'hire', label: 'hire me' },
   { key: 'q', command: 'quit', label: 'leave the void' },
-];
-
-export const bootLines = [
-  'uploading resume.pdf',
-  'guessing oat milk vs just-black-I-ship',
-  'guessing navy mug vs emotional-support Stanley',
-  'checking if Mercury is in Greenhouse',
-  '404 human',
 ];

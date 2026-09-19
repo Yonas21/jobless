@@ -2,7 +2,6 @@ import { execFileSync } from 'node:child_process';
 
 import {
   about,
-  bootLines,
   experience,
   hireMailto,
   lookingFor,
@@ -24,7 +23,6 @@ import {
   cyan,
   dim,
   green,
-  hideCursor,
   inner,
   kv,
   link,
@@ -33,8 +31,6 @@ import {
   print,
   red,
   section,
-  showCursor,
-  sleep,
   wrap,
   yellow,
 } from './style.js';
@@ -88,27 +84,8 @@ export const printSignature = () => {
 export const printHints = () => {
   blank();
   print(
-    `  ${bold(green('h'))} hire me   ${dim('·')}   ${bold('1')} proof   ${dim('·')}   ${bold('5')} rant   ${dim('·')}   ${bold('q')} quit`,
+    `  ${bold(green('h'))} hire   ${dim('·')}   ${bold('1')} proof   ${dim('·')}   ${bold('l')} lint a posting   ${dim('·')}   ${bold('q')} quit`,
   );
-};
-
-export const printBoot = async () => {
-  hideCursor();
-  try {
-    print(dim('  applying to a role that was closed in 2022...'));
-    blank();
-    for (const [index, line] of bootLines.entries()) {
-      print(`  ${dim(`[${String(index + 1)}/5]`)} ${line}`);
-      await sleep(180);
-    }
-    blank();
-    print(`  ${bold(red('RESULT'))}     ${bold('REJECTED')}`);
-    print(`  ${dim('reason')}     guessed white mug. it was navy. also a Virgo.`);
-    print(`  ${dim('elapsed')}    0.40s  (personal best)`);
-    print(`  ${dim('note')}       the loading bar is the joke. the work is not.`);
-  } finally {
-    showCursor();
-  }
 };
 
 export const printWho = () => {
@@ -157,6 +134,38 @@ export const printRant = () => {
   blank();
   print(`  ${dim('Still here? Congrats. You already outperformed the ATS.')}`);
   print(`  ${dim('If you want the work, press')} ${bold('1')}${dim('. If you want to hire, press')} ${bold(green('h'))}${dim('.')}`);
+};
+
+export const printLintReport = (result, source = 'stdin') => {
+  const { findings } = result;
+  const errors = findings.filter((item) => item.level === 'error');
+  const warnings = findings.filter((item) => item.level === 'warn');
+
+  blank();
+  section('JOBLESS LINT');
+  blank();
+  print(`  ${dim(source)}`);
+  blank();
+
+  if (!findings.length) {
+    print(`  ${green('clean')}  this posting might be a real job.`);
+    blank();
+    print(`  ${dim('If you still want the engineer who wrote the linter:')} ${bold(green('h'))}`);
+    return { errors: 0, warnings: 0 };
+  }
+
+  for (const finding of findings) {
+    const tag = finding.level === 'error' ? red('error') : yellow('warn ');
+    print(`  ${tag}  ${finding.message}`);
+    print(`        ${dim(finding.id)}`);
+    blank();
+  }
+
+  const fail = errors.length > 0;
+  print(`  ${fail ? bold(red('REJECTED')) : yellow('WARNING')}   ${errors.length} error${errors.length === 1 ? '' : 's'}  ${warnings.length} warning${warnings.length === 1 ? '' : 's'}`);
+  print(`  ${dim('reason')}     failed the human compiler`);
+  print(`  ${dim('next')}       send this report back. or hire the person who wrote it.`);
+  return { errors: errors.length, warnings: warnings.length };
 };
 
 export const printWork = () => {
@@ -235,23 +244,24 @@ export const printMenu = () => {
 export const printHelp = () => {
   print(banner());
   blank();
-  print(`  ${bold('npx jobless')}              interactive resume`);
+  print(`  ${bold('npx jobless')}              reject you, then the resume`);
+  print(`  ${bold('npx jobless lint [file]')}  lint a job posting`);
   print(`  ${bold('npx jobless work')}         proof of work`);
   print(`  ${bold('npx jobless hire')}         email + links`);
   print(`  ${bold('npx jobless who')}          bio`);
   print(`  ${bold('npx jobless looking')}      roles`);
   print(`  ${bold('npx jobless skills')}       stack`);
   print(`  ${bold('npx jobless rant')}         the market`);
-  print(`  ${bold('npx jobless --joke')}       ATS rejection intro`);
+  print(`  ${bold('npx jobless --resume')}     skip the rejection`);
   print(`  ${bold('npx jobless --json')}       machine readable`);
   blank();
-  print(`  ${dim('In the prompt:')} ${bold(green('h'))} ${dim('hires,')} ${bold('1')} ${dim('is proof,')} ${bold('q')} ${dim('quits.')}`);
+  print(`  ${dim('In the prompt:')} ${bold(green('h'))} ${dim('hires,')} ${bold('l')} ${dim('lints a posting,')} ${bold('q')} ${dim('quits.')}`);
   print(`  ${dim(profile.website)}`);
 };
 
 export const printLandingTeaser = () => {
   blank();
-  print(`  ${dim('The rant is option')} ${bold('5')}${dim('. The work is already on screen.')}`);
+  print(`  ${dim('Paste a posting with')} ${bold('l')}${dim('. The rant is')} ${bold('5')}${dim('.')}`);
 };
 
 export const toJson = () =>
