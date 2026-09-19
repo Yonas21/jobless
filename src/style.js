@@ -118,7 +118,7 @@ export const banner = () => {
   return box(
     [
       bold(brightRed(pad('JOBLESS', max, 'center'))),
-      dim(pad('a terminal resume for a broken job market', max, 'center')),
+      dim(pad('senior engineer. production systems. not a carousel.', max, 'center')),
     ],
     { title: 'npx jobless' },
   );

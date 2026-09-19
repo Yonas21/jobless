@@ -20,6 +20,7 @@ import {
   printLooking,
   printMenu,
   printRant,
+  printSignature,
   printSkills,
   printWho,
   printWork,
@@ -38,9 +39,11 @@ const COMMANDS = {
   rant: printRant,
   market: printRant,
   work: printWork,
+  proof: printWork,
   experience: printWork,
   skills: printSkills,
   hire: printHire,
+  h: printHire,
   links: printHire,
   contact: printHire,
 };
@@ -54,6 +57,7 @@ const resolveCommand = (input) => {
   const value = String(input).trim().toLowerCase();
   if (!value) return null;
   if (value === 'q' || value === 'quit' || value === 'exit') return 'quit';
+  if (value === 'help') return 'help';
   const fromMenu = menu.find((item) => item.key === value || item.command === value);
   if (fromMenu) return fromMenu.command;
   if (COMMANDS[value]) return value;
@@ -67,10 +71,11 @@ const runCommand = (command) => {
   return true;
 };
 
-const interactive = async ({ animate }) => {
+const interactive = async ({ joke }) => {
   if (process.stdout.isTTY) clear();
   printHeader();
-  if (animate) {
+  printSignature();
+  if (joke) {
     blank();
     await printBoot();
   }
@@ -84,12 +89,19 @@ const interactive = async ({ animate }) => {
       const command = resolveCommand(answer);
 
       if (!command) {
-        print(`  ${dim('unknown. try 1–6 or q.')}`);
+        print(`  ${dim('unknown. try 1–5, h to hire, or q.')}`);
+        continue;
+      }
+      if (command === 'help') {
+        if (process.stdout.isTTY) clear();
+        printHelp();
+        printMenu();
         continue;
       }
       if (command === 'quit') {
         blank();
         print(dim('  still jobless. still shipping.'));
+        print(dim('  yonalem21@gmail.com'));
         blank();
         break;
       }
@@ -114,7 +126,7 @@ const parse = (argv) => {
 export const run = async (argv = []) => {
   const { flags, rest } = parse(argv);
 
-  if (flags.has('-h') || flags.has('--help')) {
+  if (flags.has('-h') || flags.has('--help') || rest[0] === 'help') {
     printHelp();
     return;
   }
@@ -129,22 +141,21 @@ export const run = async (argv = []) => {
     return;
   }
 
-  const animate = process.stdout.isTTY && !flags.has('--no-anim');
+  const joke = flags.has('--joke');
   const command = rest[0] ? resolveCommand(rest[0]) : null;
 
-  if (command && command !== 'quit') {
+  if (command && command !== 'quit' && command !== 'help') {
     printHeader();
     runCommand(command);
     blank();
-    print(dim('  more: npx jobless   or   npx jobless --help'));
+    print(dim('  more: npx jobless   ·   npx jobless hire   ·   npx jobless --help'));
     return;
   }
 
   if (!process.stdout.isTTY) {
     printHeader();
+    printSignature();
     printWho();
-    printLooking();
-    printRant();
     printHire({ copy: false });
     return;
   }
@@ -155,5 +166,5 @@ export const run = async (argv = []) => {
     process.exit(0);
   });
 
-  await interactive({ animate });
+  await interactive({ joke });
 };

@@ -9,10 +9,15 @@ export const profile = {
   phone: '+251 936 972 697',
   website: 'https://yonasalem.vercel.app',
   github: 'https://github.com/Yonas21',
+  repo: 'https://github.com/Yonas21/jobless',
   linkedin: 'https://www.linkedin.com/in/yonasalem21/',
   instagram: 'https://www.instagram.com/its_yon_21/',
   resume: 'https://yonasalem.vercel.app/assets/resume.pdf',
 };
+
+export const hireMailto = `mailto:${profile.email}?subject=${encodeURIComponent(
+  'npx jobless — Yonas Alem',
+)}&body=${encodeURIComponent('I ran npx jobless. I want to talk about a role.\n')}`;
 
 export const stats = [
   { value: '5+', label: 'years in production' },
@@ -20,6 +25,16 @@ export const stats = [
   { value: '~30%', label: 'performance gain' },
   { value: '3B+', label: 'ETB payment volume' },
 ];
+
+export const signature = {
+  title: 'The deploy that killed 17 cron jobs',
+  lines: [
+    'Recurring Amazon sync jobs silently stopped after every deploy.',
+    'Traced it through BullMQ, ioredis, the Node process lifecycle, and the Railway scheduler.',
+    'Then added explicit shutdown handling across 17 cron processes.',
+    'I debug silent production failures. That is the job.',
+  ],
+};
 
 export const about = [
   'I build and fix production systems across payments, gaming, ecommerce, advertising, and government services — from PostgreSQL and backend services through React, AWS, and the last mile of production debugging.',
@@ -169,12 +184,12 @@ export const quotes = [
 ];
 
 export const menu = [
-  { key: '1', command: 'who', label: 'who I am' },
-  { key: '2', command: 'looking', label: 'roles I want' },
-  { key: '3', command: 'rant', label: 'the market, with jokes' },
-  { key: '4', command: 'work', label: 'proof of work' },
-  { key: '5', command: 'skills', label: 'the stack' },
-  { key: '6', command: 'hire', label: 'hire me / links' },
+  { key: '1', command: 'work', label: 'proof of work' },
+  { key: '2', command: 'who', label: 'who I am' },
+  { key: '3', command: 'looking', label: 'roles I want' },
+  { key: '4', command: 'skills', label: 'the stack' },
+  { key: '5', command: 'rant', label: 'the market, with jokes' },
+  { key: 'h', command: 'hire', label: 'hire me' },
   { key: 'q', command: 'quit', label: 'leave the void' },
 ];
 

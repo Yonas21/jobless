@@ -4,11 +4,13 @@ import {
   about,
   bootLines,
   experience,
+  hireMailto,
   lookingFor,
   menu,
   profile,
   quotes,
   rants,
+  signature,
   skills,
   stats,
   work,
@@ -67,7 +69,26 @@ export const printHeader = () => {
   print(`  ${statLine(stats.slice(2))}`);
   blank();
   print(
-    `  ${link(profile.email, `mailto:${profile.email}`)}${dim('  ·  ')}${link(profile.website, profile.website)}${dim('  ·  ')}${link(profile.github.replace('https://', ''), profile.github)}`,
+    `  ${link(profile.email, hireMailto)}${dim('  ·  ')}${link(profile.website, profile.website)}${dim('  ·  ')}${link(
+      profile.github.replace('https://', ''),
+      profile.github,
+    )}`,
+  );
+};
+
+export const printSignature = () => {
+  blank();
+  section('PROOF');
+  blank();
+  print(`  ${bold(signature.title)}`);
+  blank();
+  for (const line of signature.lines) bullet(line);
+};
+
+export const printHints = () => {
+  blank();
+  print(
+    `  ${bold(green('h'))} hire me   ${dim('·')}   ${bold('1')} proof   ${dim('·')}   ${bold('5')} rant   ${dim('·')}   ${bold('q')} quit`,
   );
 };
 
@@ -84,7 +105,7 @@ export const printBoot = async () => {
     print(`  ${bold(red('RESULT'))}     ${bold('REJECTED')}`);
     print(`  ${dim('reason')}     guessed white mug. it was navy. also a Virgo.`);
     print(`  ${dim('elapsed')}    0.40s  (personal best)`);
-    print(`  ${dim('note')}       the loading bar is the joke. the rejection is documentary.`);
+    print(`  ${dim('note')}       the loading bar is the joke. the work is not.`);
   } finally {
     showCursor();
   }
@@ -135,11 +156,13 @@ export const printRant = () => {
   }
   blank();
   print(`  ${dim('Still here? Congrats. You already outperformed the ATS.')}`);
+  print(`  ${dim('If you want the work, press')} ${bold('1')}${dim('. If you want to hire, press')} ${bold(green('h'))}${dim('.')}`);
 };
 
 export const printWork = () => {
+  printSignature();
   blank();
-  section('PROOF');
+  print(`  ${dim('experience')}`);
   blank();
   for (const job of experience) {
     print(`  ${bold(job.role)}`);
@@ -182,7 +205,7 @@ export const printHire = ({ copy = true } = {}) => {
   blank();
   print(`  ${dim('Skip the 47-field form. This is the whole application.')}`);
   blank();
-  kv('Email', link(profile.email, `mailto:${profile.email}`));
+  kv('Email', link(profile.email, hireMailto));
   kv('Phone', link(profile.phone, `tel:${profile.phone.replace(/\s+/g, '')}`));
   kv('Site', link(profile.website, profile.website));
   kv('GitHub', link(profile.github, profile.github));
@@ -192,8 +215,9 @@ export const printHire = ({ copy = true } = {}) => {
   if (copy && process.stdout.isTTY && copyToClipboard(profile.email)) {
     print(`  ${green('copied')} ${profile.email} ${dim('to clipboard')}`);
   }
+  print(`  ${dim('or')} ${link('open a prefilled email', hireMailto)}`);
   blank();
-  print(`  ${dim('If you got this far, you already did more than most ATS pipelines.')}`);
+  print(`  ${dim('Remote senior / full-stack. I can start a conversation this week.')}`);
 };
 
 export const printMenu = () => {
@@ -204,32 +228,30 @@ export const printMenu = () => {
       { title: 'open a door' },
     ),
   );
+  printHints();
   blank();
 };
 
 export const printHelp = () => {
   print(banner());
   blank();
-  print(`  ${bold('npx jobless')}              interactive`);
+  print(`  ${bold('npx jobless')}              interactive resume`);
+  print(`  ${bold('npx jobless work')}         proof of work`);
+  print(`  ${bold('npx jobless hire')}         email + links`);
   print(`  ${bold('npx jobless who')}          bio`);
   print(`  ${bold('npx jobless looking')}      roles`);
-  print(`  ${bold('npx jobless rant')}         the market`);
-  print(`  ${bold('npx jobless work')}         experience`);
   print(`  ${bold('npx jobless skills')}       stack`);
-  print(`  ${bold('npx jobless hire')}         links + email`);
+  print(`  ${bold('npx jobless rant')}         the market`);
+  print(`  ${bold('npx jobless --joke')}       ATS rejection intro`);
   print(`  ${bold('npx jobless --json')}       machine readable`);
-  print(`  ${bold('npx jobless --no-anim')}    skip the ATS joke`);
   blank();
-  print(`  ${dim('Built because the feed would not shut up.')}`);
+  print(`  ${dim('In the prompt:')} ${bold(green('h'))} ${dim('hires,')} ${bold('1')} ${dim('is proof,')} ${bold('q')} ${dim('quits.')}`);
   print(`  ${dim(profile.website)}`);
 };
 
 export const printLandingTeaser = () => {
   blank();
-  print(`  ${yellow('LinkedIn is a content farm with a jobs tab. This is the profile.')}`);
-  print(`  ${dim('Applications take 30 minutes. The no takes 400ms.')}`);
-  print(`  ${dim('Recruiters book the call so they have something to cancel.')}`);
-  print(`  ${dim('I still do not know their coffee, their mug, or their star sign.')}`);
+  print(`  ${dim('The rant is option')} ${bold('5')}${dim('. The work is already on screen.')}`);
 };
 
 export const toJson = () =>
@@ -246,7 +268,9 @@ export const toJson = () =>
         github: profile.github,
         linkedin: profile.linkedin,
         resume: profile.resume,
+        mailto: hireMailto,
       },
+      signature,
       lookingFor,
       rants,
       stats,
