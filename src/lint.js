@@ -1,3 +1,5 @@
+import { detectIdentity } from './identity.js';
+
 const hasMoney = (text) =>
   /\$|€|£|\bUSD\b|\bEUR\b|\bGBP\b|\b\d{2,3}\s?k\b|\b\d{1,3}(,\d{3})+\b/i.test(text);
 
@@ -100,4 +102,46 @@ export const summarizeLint = (findings) => {
   const errors = findings.filter((item) => item.level === 'error').length;
   const warnings = findings.filter((item) => item.level === 'warn').length;
   return { errors, warnings };
+};
+
+export const postingMeta = (text) => {
+  const roleMatch = String(text || '').match(
+    /\b(?:senior|staff|principal|lead|junior|entry[- ]level)?[ \t]*(?:full[- ]stack|frontend|backend|software|platform)?[ \t]*(?:engineer|developer|designer)\b/i,
+  );
+  const atMatch = String(text || '').match(
+    /\b(?:at|@|join)[ \t]+([A-Z][A-Za-z0-9&.'\-]{1,32}(?:[ \t]+[A-Z][A-Za-z0-9&.'\-]{1,20}){0,2})/,
+  );
+  return {
+    role: roleMatch ? roleMatch[0].replace(/\s+/g, ' ').trim() : 'this role',
+    company: atMatch ? atMatch[1].trim() : 'Hiring',
+  };
+};
+
+export const lintResult = (raw, source = 'stdin') => {
+  const { text, findings } = lintJobPost(raw);
+  const { errors, warnings } = summarizeLint(findings);
+  const identity = detectIdentity();
+  const meta = postingMeta(text);
+  const errorReasons = findings.filter((item) => item.level === 'error').map((item) => item.message);
+  const warnReasons = findings.filter((item) => item.level === 'warn').map((item) => item.message);
+  const reasons = (errorReasons.length ? errorReasons : warnReasons).slice(0, 2);
+
+  return {
+    source,
+    ok: errors === 0,
+    errors,
+    warnings,
+    findings,
+    meta,
+    letter:
+      findings.length === 0
+        ? null
+        : {
+            from: `${identity.name} <${identity.email}>`,
+            to: `${meta.company} <no-reply@not-a-human.com>`,
+            subject: `Your opening for ${meta.role}`,
+            result: errors > 0 ? 'REJECTED' : 'HELD FOR REVIEW',
+            reasons,
+          },
+  };
 };

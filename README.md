@@ -35,18 +35,29 @@ pbpaste | npx jobless lint
 Or run `npx jobless` and press `l`.
 
 ```
-error  salary described as competitive, with no number
+error  salary described as competitive / attractive / market-rate, with no number
        no-fake-salary
 error  too many interview rounds
        max-rounds
-warn   "fast-paced" / "wear many hats"
+warn   "fast-paced" / "wear many hats" / "do more with less"
        means-understaffed
 
-REJECTED   2 errors  1 warning
-reason     failed the human compiler
+FROM     you <you@laptop>
+TO       Hiring <no-reply@not-a-human.com>
+SUBJECT  Your opening for this role
+
+Thank you for your interest in my labor. After careful consideration of your job description, I will not be moving forward.
+
+RESULT    REJECTED
+reason    salary described as competitive / attractive / market-rate, with no number
+also      too many interview rounds
+next      we will keep your posting on file. we will not.
+
+that was not a recruiter.
+that was you, finally answering.
 ```
 
-Same idea as ESLint. The file is a job description. The company has to pass.
+Same idea as ESLint. The file is a job description. Errors fail the process (`exit 1`). Warnings hold it for review. `npx jobless lint --json` prints the findings and the letter.
 
 ## Hire
 
@@ -60,7 +71,8 @@ Same idea as ESLint. The file is a job description. The company has to pass.
 
 ```bash
 npx jobless                 # reject you, then the resume
-npx jobless lint file.txt   # lint a job post
+npx jobless lint file.txt   # lint a job post (exit 1 on errors)
+npx jobless lint --json     # findings + rejection letter
 npx jobless work            # proof
 npx jobless hire            # email + links
 npx jobless rant            # the market

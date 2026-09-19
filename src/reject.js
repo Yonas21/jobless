@@ -11,6 +11,7 @@ import {
   showCursor,
   sleep,
   wrap,
+  yellow,
 } from './style.js';
 
 const BOOT = [
@@ -98,4 +99,34 @@ export const printTrap = async ({ animate = true } = {}) => {
   print(`  ${dim('that was the market, in your own terminal.')}`);
   blank();
   print(`  ${dim('anyway. here is an engineer who debugs silent production failures.')}`);
+};
+
+export const printCompanyReject = (letter) => {
+  if (!letter) return;
+
+  blank();
+  print(
+    box([
+      dim(`FROM     ${letter.from}`),
+      dim(`TO       ${letter.to}`),
+      dim(`SUBJECT  ${letter.subject}`),
+      '',
+      ...wrap(
+        letter.result === 'REJECTED'
+          ? 'Thank you for your interest in my labor. After careful consideration of your job description, I will not be moving forward.'
+          : 'Thank you for your interest in my labor. Your posting has been held for review. Fix the warnings and resubmit.',
+        inner(),
+      ),
+      '',
+      `${bold(red('RESULT'))}    ${bold(letter.result === 'REJECTED' ? red(letter.result) : yellow(letter.result))}`,
+      `${dim('reason')}    ${letter.reasons[0] || 'failed the human compiler'}`,
+      ...(letter.reasons[1] ? [`${dim('also')}      ${letter.reasons[1]}`] : []),
+      `${dim('elapsed')}   0.40s`,
+      `${dim('next')}      we will keep your posting on file. we will not.`,
+    ]),
+  );
+
+  blank();
+  print(`  ${dim('that was not a recruiter.')}`);
+  print(`  ${dim('that was you, finally answering.')}`);
 };

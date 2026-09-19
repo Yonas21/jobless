@@ -1,6 +1,6 @@
 {
   "name": "jobless",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "npx jobless — first it rejects you. then it lints the job post. then you meet the engineer.",
   "keywords": [
     "cli",

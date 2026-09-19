@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { stdin } from 'node:process';
 
 import { menu } from './data.js';
-import { lintJobPost } from './lint.js';
+import { lintResult } from './lint.js';
 import { printTrap } from './reject.js';
 import {
   blank,
@@ -129,7 +129,7 @@ const interactive = async ({ trap }) => {
         const text = await readPaste(rl);
         if (process.stdout.isTTY) clear();
         printHeader();
-        printLintReport(lintJobPost(text), 'paste');
+        printLintReport(lintResult(text, 'paste'));
         printMenu();
         continue;
       }
@@ -162,7 +162,7 @@ const parse = (argv) => {
   return { flags, rest };
 };
 
-const runLintCli = async (files) => {
+const runLintCli = async (files, { json = false } = {}) => {
   let source = 'stdin';
   let text = '';
 
@@ -179,7 +179,15 @@ const runLintCli = async (files) => {
     return;
   }
 
-  printLintReport(lintJobPost(text), source);
+  const report = lintResult(text, source);
+  if (!report.ok) process.exitCode = 1;
+
+  if (json) {
+    print(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  printLintReport(report);
   blank();
   print(dim('  more: npx jobless   ·   npx jobless hire'));
 };
@@ -202,13 +210,13 @@ export const run = async (argv = []) => {
     return;
   }
 
-  if (flags.has('--json')) {
-    print(toJson());
+  if (verb === 'lint' || verb === 'l') {
+    await runLintCli(rest.slice(1), { json: flags.has('--json') });
     return;
   }
 
-  if (verb === 'lint' || verb === 'l') {
-    await runLintCli(rest.slice(1));
+  if (flags.has('--json')) {
+    print(toJson());
     return;
   }
 

@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process';
 
+import { printCompanyReject } from './reject.js';
+
 import {
   about,
   experience,
@@ -136,10 +138,8 @@ export const printRant = () => {
   print(`  ${dim('If you want the work, press')} ${bold('1')}${dim('. If you want to hire, press')} ${bold(green('h'))}${dim('.')}`);
 };
 
-export const printLintReport = (result, source = 'stdin') => {
-  const { findings } = result;
-  const errors = findings.filter((item) => item.level === 'error');
-  const warnings = findings.filter((item) => item.level === 'warn');
+export const printLintReport = (report) => {
+  const { findings, source, errors, warnings, letter, ok } = report;
 
   blank();
   section('JOBLESS LINT');
@@ -147,11 +147,11 @@ export const printLintReport = (result, source = 'stdin') => {
   print(`  ${dim(source)}`);
   blank();
 
-  if (!findings.length) {
+  if (ok && !findings.length) {
     print(`  ${green('clean')}  this posting might be a real job.`);
     blank();
     print(`  ${dim('If you still want the engineer who wrote the linter:')} ${bold(green('h'))}`);
-    return { errors: 0, warnings: 0 };
+    return report;
   }
 
   for (const finding of findings) {
@@ -161,11 +161,12 @@ export const printLintReport = (result, source = 'stdin') => {
     blank();
   }
 
-  const fail = errors.length > 0;
-  print(`  ${fail ? bold(red('REJECTED')) : yellow('WARNING')}   ${errors.length} error${errors.length === 1 ? '' : 's'}  ${warnings.length} warning${warnings.length === 1 ? '' : 's'}`);
-  print(`  ${dim('reason')}     failed the human compiler`);
-  print(`  ${dim('next')}       send this report back. or hire the person who wrote it.`);
-  return { errors: errors.length, warnings: warnings.length };
+  printCompanyReject(letter);
+  blank();
+  print(
+    `  ${errors} error${errors === 1 ? '' : 's'}  ${warnings} warning${warnings === 1 ? '' : 's'}  ${dim('·')}  ${dim('hire the person who wrote the compiler:')} ${bold(green('h'))}`,
+  );
+  return report;
 };
 
 export const printWork = () => {
@@ -246,6 +247,7 @@ export const printHelp = () => {
   blank();
   print(`  ${bold('npx jobless')}              reject you, then the resume`);
   print(`  ${bold('npx jobless lint [file]')}  lint a job posting`);
+  print(`  ${bold('npx jobless lint --json')}  findings + rejection letter`);
   print(`  ${bold('npx jobless work')}         proof of work`);
   print(`  ${bold('npx jobless hire')}         email + links`);
   print(`  ${bold('npx jobless who')}          bio`);
@@ -253,7 +255,7 @@ export const printHelp = () => {
   print(`  ${bold('npx jobless skills')}       stack`);
   print(`  ${bold('npx jobless rant')}         the market`);
   print(`  ${bold('npx jobless --resume')}     skip the rejection`);
-  print(`  ${bold('npx jobless --json')}       machine readable`);
+  print(`  ${bold('npx jobless --json')}       machine readable resume`);
   blank();
   print(`  ${dim('In the prompt:')} ${bold(green('h'))} ${dim('hires,')} ${bold('l')} ${dim('lints a posting,')} ${bold('q')} ${dim('quits.')}`);
   print(`  ${dim(profile.website)}`);
